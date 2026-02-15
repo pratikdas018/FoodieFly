@@ -29,7 +29,42 @@ import { useLocation } from 'react-router-dom'
 import Footer from './components/Footer'
 import AdminDashboard from './components/AdminDashboard'
 
-export const serverUrl = import.meta.env.VITE_SERVER_URL || "http://localhost:8000"
+const resolveServerUrl = () => {
+  const trimTrailingSlash = (value = "") => String(value || "").trim().replace(/\/+$/, "")
+  const configuredUrl = trimTrailingSlash(import.meta.env.VITE_SERVER_URL)
+
+  if (typeof window === "undefined") {
+    return configuredUrl || "http://localhost:8000"
+  }
+
+  const hostname = window.location.hostname
+  const isLocalBrowser = hostname === "localhost" || hostname === "127.0.0.1"
+
+  if (configuredUrl) {
+    const configuredIsLocal = /localhost|127\.0\.0\.1/.test(configuredUrl)
+    if (!(configuredIsLocal && !isLocalBrowser)) {
+      return configuredUrl
+    }
+    console.warn("VITE_SERVER_URL points to localhost in production browser. Falling back to inferred server URL.")
+  }
+
+  if (isLocalBrowser) {
+    return "http://localhost:8000"
+  }
+
+  if (hostname.endsWith(".onrender.com")) {
+    if (hostname.includes("-frontend")) {
+      return `${window.location.protocol}//${hostname.replace("-frontend", "-backend")}`
+    }
+    if (hostname.includes("frontend")) {
+      return `${window.location.protocol}//${hostname.replace("frontend", "backend")}`
+    }
+  }
+
+  return ""
+}
+
+export const serverUrl = resolveServerUrl()
 const APP_POPUP_EVENT = "app-popup"
 
 export const showAppPopup = ({ title = "FoodieFly", message = "", type = "info" }) => {
