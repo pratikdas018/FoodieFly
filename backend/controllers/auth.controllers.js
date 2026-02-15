@@ -200,20 +200,36 @@ export const resetPassword=async (req,res) => {
 export const googleAuth=async (req,res) => {
     try {
         const {fullName,email,mobile,role,referralCode}=req.body
-        if (!publicRoles.includes(role)) {
-            return res.status(400).json({ message: "invalid role" })
+        if (!email) {
+            return res.status(400).json({ message: "email is required" })
         }
+
         let user=await User.findOne({email})
-        if(!user){
+        if (user) {
+            if (user.accountStatus === "suspended") {
+                return res.status(403).json({ message: "Account suspended by admin." })
+            }
+            await ensureUserReferralCode(user)
+        } else {
+            if (!publicRoles.includes(role)) {
+                return res.status(400).json({ message: "Please sign up with role selection first." })
+            }
+            if (!mobile || String(mobile).trim().length < 10) {
+                return res.status(400).json({ message: "mobile no is required" })
+            }
+            const displayName = String(fullName || "").trim()
+            if (!displayName) {
+                return res.status(400).json({ message: "fullName is required" })
+            }
             const referrer = await resolveReferrer(referralCode)
             if (cleanReferralCode(referralCode) && !referrer) {
                 return res.status(400).json({ message: "Invalid referral code." })
             }
-            const generatedReferralCode = await generateUniqueReferralCode(fullName)
+            const generatedReferralCode = await generateUniqueReferralCode(displayName)
             user=await User.create({
-                fullName,
+                fullName: displayName,
                 email,
-                mobile,
+                mobile: String(mobile).trim(),
                 role,
                 referralCode: generatedReferralCode,
                 referredBy: referrer?._id || null,
@@ -228,11 +244,6 @@ export const googleAuth=async (req,res) => {
                     }
                 })
             }
-        } else {
-            if (user.accountStatus === "suspended") {
-                return res.status(403).json({ message: "Account suspended by admin." })
-            }
-            await ensureUserReferralCode(user)
         }
 
         const token=await genToken(user._id)

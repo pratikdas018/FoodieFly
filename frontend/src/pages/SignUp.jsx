@@ -27,7 +27,16 @@ function SignUp() {
     const [referralCode,setReferralCode]=useState("")
     const [err,setErr]=useState("")
     const [loading,setLoading]=useState(false)
+    const [googleLoading,setGoogleLoading]=useState(false)
     const dispatch=useDispatch()
+    const getAuthErrorMessage = (error) => {
+      const firebaseCode = error?.code || ""
+      if (firebaseCode === "auth/popup-blocked") return "Google popup was blocked. Please allow popups and try again."
+      if (firebaseCode === "auth/popup-closed-by-user") return "Google popup was closed before sign up completed."
+      if (firebaseCode === "auth/cancelled-popup-request") return "Google sign up request was cancelled. Please try again."
+      if (firebaseCode === "auth/unauthorized-domain") return "This domain is not authorized for Google sign in. Add it in Firebase Auth settings."
+      return error?.response?.data?.message || error?.message || "Google sign up failed."
+    }
      const handleSignUp=async () => {
         setLoading(true)
         try {
@@ -59,32 +68,42 @@ function SignUp() {
         if(!mobile){
           return setErr("mobile no is required")
         }
-        const provider=new GoogleAuthProvider()
-        const result=await signInWithPopup(auth,provider)
-  try {
-    const {data}=await axios.post(`${serverUrl}/api/auth/google-auth`,{
-        fullName:result.user.displayName,
-        email:result.user.email,
-        role,
-        mobile,
-        referralCode
-    },{withCredentials:true})
-   dispatch(setUserData(data))
-   showAppPopup({
-    title: "Registration Successful",
-    message: `Welcome to FoodieFly, ${data.fullName || "User"}!`,
-    type: "success"
-   })
-   if (data.role === "user") {
-    showAppPopup({
-      title: "First Order Offer",
-      message: "Up to 78% off on your first order. Order now!",
-      type: "promo"
-    })
-   }
-  } catch (error) {
-    console.log(error)
-  }
+        setErr("")
+        setGoogleLoading(true)
+        try {
+          const provider=new GoogleAuthProvider()
+          const result=await signInWithPopup(auth,provider)
+          const {data}=await axios.post(`${serverUrl}/api/auth/google-auth`,{
+              fullName:result.user.displayName || fullName,
+              email:result.user.email,
+              role,
+              mobile,
+              referralCode
+          },{withCredentials:true})
+          dispatch(setUserData(data))
+          showAppPopup({
+            title: "Registration Successful",
+            message: `Welcome to FoodieFly, ${data.fullName || "User"}!`,
+            type: "success"
+          })
+          if (data.role === "user") {
+            showAppPopup({
+              title: "First Order Offer",
+              message: "Up to 78% off on your first order. Order now!",
+              type: "promo"
+            })
+          }
+        } catch (error) {
+          const message = getAuthErrorMessage(error)
+          setErr(message)
+          showAppPopup({
+            title: "Google Sign Up Failed",
+            message,
+            type: "info"
+          })
+        } finally {
+          setGoogleLoading(false)
+        }
      }
     return (
         <div className='min-h-screen w-full flex items-center justify-center p-4' style={{ backgroundColor: bgColor }}>
@@ -155,9 +174,9 @@ function SignUp() {
             {err && <p className='text-red-500 text-center my-[10px]'>*{err}</p>}
             
 
-            <button className='w-full mt-4 flex items-center justify-center gap-2 border rounded-lg px-4 py-2 transition cursor-pointer duration-200 border-gray-400 hover:bg-gray-100' onClick={handleGoogleAuth}>
+            <button className='w-full mt-4 flex items-center justify-center gap-2 border rounded-lg px-4 py-2 transition cursor-pointer duration-200 border-gray-400 hover:bg-gray-100 disabled:opacity-70 disabled:cursor-not-allowed' onClick={handleGoogleAuth} disabled={googleLoading}>
 <FcGoogle size={20}/>
-<span>Sign up with Google</span>
+<span>{googleLoading ? "Please wait..." : "Sign up with Google"}</span>
             </button>
             <p className='text-center mt-6 cursor-pointer' onClick={()=>navigate("/signin")}>Already have an account ?  <span className='text-[#ff4d2d]'>Sign In</span></p>
             </div>

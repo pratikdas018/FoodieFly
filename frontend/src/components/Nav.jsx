@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { FaLocationDot } from "react-icons/fa6";
 import { IoIosSearch } from "react-icons/io";
-import { FiBell, FiShoppingCart } from "react-icons/fi";
+import { FiBell, FiHeart, FiShoppingCart } from "react-icons/fi";
 import { useDispatch, useSelector } from 'react-redux';
 import { RxCross2 } from "react-icons/rx";
 import axios from 'axios';
@@ -21,6 +21,7 @@ function Nav() {
     const navigate=useNavigate()
     const location = useLocation()
     const unreadCount = notifications.filter((notification) => !notification.read).length
+    const favoriteCount = Array.isArray(userData?.favoriteItems) ? userData.favoriteItems.length : 0
 
     const formatNotificationTime = (timestamp) => {
       if (!timestamp) return ""
@@ -96,6 +97,16 @@ function Nav() {
       navigate("/admin")
     }
 
+    const handleNavigateToFavorites = () => {
+      setShowInfo(false)
+      setShowNotifications(false)
+      if (location.pathname === "/favorites") {
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" })
+        return
+      }
+      navigate("/favorites")
+    }
+
     const handleSearchItems=async () => {
       if (!currentCity) return
       try {
@@ -151,7 +162,7 @@ handleSearchItems()
                     </div>
                 </div>}
 
-                <div className='flex items-center gap-2 md:gap-3'>
+                <div className='flex items-center gap-2 md:gap-3 relative'>
                     {userData.role == "user" && (
                         <button className={`md:hidden ${iconButtonClass}`} onClick={() => setShowSearch((prev) => !prev)}>
                             {showSearch ? <RxCross2 size={20} /> : <IoIosSearch size={20} />}
@@ -182,6 +193,14 @@ handleSearchItems()
                                 <FiShoppingCart size={19} />
                                 <span className='absolute right-[-4px] top-[-6px] min-w-[16px] h-[16px] px-1 rounded-full bg-[#ff4d2d] text-white text-[10px] flex items-center justify-center'>{cartItems.length}</span>
                             </button>}
+                            {userData.role=="user" && <button className={`relative ${iconButtonClass}`} onClick={handleNavigateToFavorites} title='Favorites'>
+                                <FiHeart size={19} />
+                                {favoriteCount > 0 && (
+                                  <span className='absolute right-[-4px] top-[-6px] min-w-[16px] h-[16px] px-1 rounded-full bg-[#ff4d2d] text-white text-[10px] flex items-center justify-center'>
+                                    {favoriteCount > 99 ? "99+" : favoriteCount}
+                                  </span>
+                                )}
+                            </button>}
 
                             {(userData.role=="user" || userData.role=="deliveryBoy") && (
                                 <button className={pillButtonClass} onClick={handleNavigateToMyOrders}>
@@ -201,7 +220,7 @@ handleSearchItems()
                         {unreadCount > 0 && <span className='absolute right-[-5px] top-[-7px] min-w-[17px] h-[17px] px-1 rounded-full bg-[#ff4d2d] text-white text-[10px] flex items-center justify-center'>{unreadCount}</span>}
                     </button>
 
-                    {showNotifications && <div className={`fixed top-[92px] right-[10px] ${userData.role=="deliveryBoy"?"md:right-[20%] lg:right-[40%]":"md:right-[10%] lg:right-[25%]"} w-[340px] max-h-[430px] overflow-y-auto bg-white/95 backdrop-blur-md border border-orange-100 shadow-[0_15px_40px_rgba(0,0,0,0.12)] rounded-2xl p-[14px] flex flex-col gap-[10px] z-[9999]`}>
+                    {showNotifications && <div className='absolute top-[52px] right-0 w-[340px] max-w-[calc(100vw-20px)] max-h-[430px] overflow-y-auto bg-white/95 backdrop-blur-md border border-orange-100 shadow-[0_15px_40px_rgba(0,0,0,0.12)] rounded-2xl p-[14px] flex flex-col gap-[10px] z-[9999]'>
                         <div className='flex items-center justify-between border-b border-orange-100 pb-2'>
                             <h3 className='text-[16px] font-semibold text-gray-800'>Notifications</h3>
                             <button className='text-sm text-[#ff4d2d] font-semibold' onClick={() => dispatch(markAllNotificationsRead())}>Mark all read</button>
@@ -220,7 +239,7 @@ handleSearchItems()
                         {userData?.fullName.slice(0, 1)}
                     </button>
 
-                    {showInfo && <div className={`fixed top-[92px] right-[10px] ${userData.role=="deliveryBoy"?"md:right-[20%] lg:right-[40%]":"md:right-[10%] lg:right-[25%]"} w-[220px] bg-white/95 backdrop-blur-md border border-orange-100 shadow-2xl rounded-2xl p-[16px] flex flex-col gap-[10px] z-[9999]`}>
+                    {showInfo && <div className='absolute top-[52px] right-0 w-[220px] max-w-[calc(100vw-20px)] bg-white/95 backdrop-blur-md border border-orange-100 shadow-2xl rounded-2xl p-[16px] flex flex-col gap-[10px] z-[9999]'>
                         <div className='text-[16px] font-semibold text-gray-800 truncate'>{userData.fullName}</div>
                         <button className='text-left text-[#ff4d2d] font-semibold cursor-pointer hover:text-[#e64526]' onClick={() => { setShowInfo(false); navigate("/profile") }}>Profile</button>
                         {userData.role=="user" && <button className='md:hidden text-left text-[#ff4d2d] font-semibold cursor-pointer hover:text-[#e64526]' onClick={handleNavigateToMyOrders}>My Orders</button>}

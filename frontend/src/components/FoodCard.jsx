@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addToCart, setUserData } from '../redux/userSlice';
 import { IoHeart, IoHeartOutline } from "react-icons/io5";
 import axios from 'axios';
-import { serverUrl } from '../App';
+import { serverUrl, showAppPopup } from '../App';
 
 function FoodCard({data}) {
 const [quantity,setQuantity]=useState(0)
@@ -52,6 +52,13 @@ const handleToggleFavorite = async () => {
     try {
       const result = await axios.post(`${serverUrl}/api/user/toggle-favorite/${data._id}`, {}, { withCredentials: true })
       dispatch(setUserData(result.data.user))
+      if (result.data?.isFavorite) {
+        showAppPopup({
+          title: "Favorites",
+          message: "Food added",
+          type: "success"
+        })
+      }
     } catch (error) {
       console.log(error)
     } finally {

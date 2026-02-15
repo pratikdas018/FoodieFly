@@ -58,7 +58,7 @@ const getTimeBasedItems = (items, slot) => {
 const normalizeCategory = (value) => (value || "").toString().trim().toLowerCase()
 
 function UserDashboard() {
-  const {currentCity,shopInMyCity,itemsInMyCity,searchItems,locationPermission,locationError,userData}=useSelector(state=>state.user)
+  const {currentCity,shopInMyCity,itemsInMyCity,searchItems,locationPermission,locationError}=useSelector(state=>state.user)
   const cateScrollRef=useRef()
   const shopScrollRef=useRef()
   const suggestedFoodRef = useRef()
@@ -72,8 +72,6 @@ function UserDashboard() {
   const [isCateAutoScrollPaused, setIsCateAutoScrollPaused] = useState(false)
   const [timeSlot, setTimeSlot] = useState(getCurrentTimeSlot())
   const [selectedCategory, setSelectedCategory] = useState("All")
-  const favoriteItemIds = new Set((userData?.favoriteItems || []).map((favorite) => String(favorite?._id || favorite)))
-  const favoriteItemsInCity = (itemsInMyCity || []).filter((item) => favoriteItemIds.has(String(item._id)))
 
 useEffect(() => {
   const updateTimeSlot = () => {
@@ -213,17 +211,6 @@ setRightButton(element.scrollLeft+element.clientWidth<element.scrollWidth)
       )}
 
       <div className="w-full max-w-6xl flex flex-col gap-5 items-start p-[10px]">
-        {favoriteItemsInCity.length > 0 && (
-          <div className='w-full flex flex-col gap-4 items-start'>
-            <h1 className='text-gray-800 text-2xl sm:text-3xl'>Your Favorites</h1>
-            <div className='w-full h-auto flex flex-wrap gap-[20px] justify-center'>
-              {favoriteItemsInCity.map((item, index) => (
-                <FoodCard key={`fav_${index}`} data={item} />
-              ))}
-            </div>
-          </div>
-        )}
-
         <h1 className='text-gray-800 text-2xl sm:text-3xl'>Inspiration for your first order</h1>
         <div className='w-full relative'>
           {showLeftCateButton &&  <button className='absolute left-0 top-1/2 -translate-y-1/2 bg-[#ff4d2d] text-white p-2 rounded-full shadow-lg hover:bg-[#e64528] z-10' onClick={()=>scrollHandler(cateScrollRef,"left")}><FaCircleChevronLeft />

@@ -28,6 +28,7 @@ import Profile from './pages/Profile'
 import { useLocation } from 'react-router-dom'
 import Footer from './components/Footer'
 import AdminDashboard from './components/AdminDashboard'
+import Favorites from './pages/Favorites'
 
 const resolveServerUrl = () => {
   const trimTrailingSlash = (value = "") => String(value || "").trim().replace(/\/+$/, "")
@@ -218,6 +219,7 @@ useUpdateLocation()
       <Route path='/track-order/:orderId' element={userData?<TrackOrderPage/>:<Navigate to={"/signin"}/>}/>
       <Route path='/shop/:shopId' element={userData?<Shop/>:<Navigate to={"/signin"}/>}/>
       <Route path='/profile' element={userData?<Profile/>:<Navigate to={"/signin"}/>}/>
+      <Route path='/favorites' element={userData?.role=="user"?<Favorites/>:<Navigate to={"/"}/>}/>
       <Route path='/admin' element={userData?.role==="admin"?<AdminDashboard/>:<Navigate to={"/"}/>}/>
     </Routes>
     {shouldShowFooter && <Footer />}
