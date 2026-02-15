@@ -1,4 +1,4 @@
-# 🍕 Vingo - Real-Time Food Delivery App
+# 🍕 FoodieFly - Real-Time Food Delivery App
 
 Vingo is a **real-time food delivery web application** built with the **MERN stack (MongoDB, Express.js, React, Node.js)**.  
 It allows users to browse restaurants, order food, and track delivery status live — all in a beautiful and responsive UI.  
