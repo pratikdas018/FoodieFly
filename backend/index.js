@@ -22,7 +22,8 @@ const defaultFrontendOrigins = [
     "http://localhost:5173",
     "http://localhost:5174",
     "http://localhost:5175",
-    "https://food-delivery-vingo-frontend.onrender.com"
+    "https://food-delivery-vingo-frontend.onrender.com",
+    "https://pratik-foodie-fly.vercel.app"
 ]
 
 const configuredOrigins = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || defaultFrontendOrigins.join(","))

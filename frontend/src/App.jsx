@@ -32,6 +32,7 @@ import AdminDashboard from './components/AdminDashboard'
 const resolveServerUrl = () => {
   const trimTrailingSlash = (value = "") => String(value || "").trim().replace(/\/+$/, "")
   const configuredUrl = trimTrailingSlash(import.meta.env.VITE_SERVER_URL)
+  const defaultProductionServerUrl = "https://food-delivery-vingo-backend.onrender.com"
 
   if (typeof window === "undefined") {
     return configuredUrl || "http://localhost:8000"
@@ -61,7 +62,11 @@ const resolveServerUrl = () => {
     }
   }
 
-  return ""
+  if (hostname.endsWith(".vercel.app")) {
+    return defaultProductionServerUrl
+  }
+
+  return defaultProductionServerUrl
 }
 
 export const serverUrl = resolveServerUrl()

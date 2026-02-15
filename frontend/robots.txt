@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://food-delivery-vingo-frontend.onrender.com/sitemap.xml
+Sitemap: https://pratik-foodie-fly.vercel.app/sitemap.xml
