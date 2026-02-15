@@ -19,6 +19,12 @@ const deliveryAssignmentSchema = new mongoose.Schema({
          ref:"User"
     }
     ],
+    declinedBy:[
+        {
+         type: mongoose.Schema.Types.ObjectId,
+         ref:"User"
+    }
+    ],
     assignedTo:{
         type: mongoose.Schema.Types.ObjectId,
          ref:"User",

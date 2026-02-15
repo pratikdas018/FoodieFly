@@ -5,6 +5,7 @@ export const socketHandler = (io) => {
     console.log(socket.id)
     socket.on('identity', async ({ userId }) => {
       try {
+        if (!userId) return
         const user = await User.findByIdAndUpdate(userId, {
           socketId: socket.id, isOnline: true
         }, { new: true })

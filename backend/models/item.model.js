@@ -39,6 +39,10 @@ const itemSchema = new mongoose.Schema({
         enum:["veg","non veg"],
         required:true
     },
+    inStock: {
+        type: Boolean,
+        default: true
+    },
    rating:{
     average:{type:Number,default:0},
     count:{type:Number,default:0}

@@ -1,5 +1,28 @@
 import mongoose from "mongoose";
-import { type } from "os";
+
+const savedAddressSchema = new mongoose.Schema({
+    label: {
+        type: String,
+        enum: ["Home", "Work", "Other"],
+        default: "Other"
+    },
+    text: {
+        type: String,
+        required: true
+    },
+    latitude: {
+        type: Number,
+        required: true
+    },
+    longitude: {
+        type: Number,
+        required: true
+    },
+    isDefault: {
+        type: Boolean,
+        default: false
+    }
+}, { timestamps: true })
 
 const userSchema = new mongoose.Schema({
     fullName: {
@@ -20,8 +43,31 @@ const userSchema = new mongoose.Schema({
     },
     role:{
         type:String,
-        enum:["user","owner","deliveryBoy"],
+        enum:["user","owner","deliveryBoy","admin"],
         required:true
+    },
+    accountStatus: {
+        type: String,
+        enum: ["active", "suspended"],
+        default: "active"
+    },
+    referralCode: {
+        type: String,
+        unique: true,
+        sparse: true
+    },
+    referredBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null
+    },
+    loyaltyPoints: {
+        type: Number,
+        default: 0
+    },
+    lifetimeLoyaltyPoints: {
+        type: Number,
+        default: 0
     },
     resetOtp:{
         type:String
@@ -41,10 +87,15 @@ const userSchema = new mongoose.Schema({
         type:Boolean,
         default:false
     },
-   location:{
+    location:{
 type:{type:String,enum:['Point'],default:'Point'},
 coordinates:{type:[Number],default:[0,0]}
-   }
+   },
+   favoriteItems: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Item"
+   }],
+   savedAddresses: [savedAddressSchema]
   
 }, { timestamps: true })
 

@@ -11,6 +11,31 @@ const shopOrderItemSchema = new mongoose.Schema({
     quantity:Number
 }, { timestamps: true })
 
+const chatMessageSchema = new mongoose.Schema({
+    sender: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
+    senderName: {
+        type: String,
+        required: true
+    },
+    senderRole: {
+        type: String,
+        enum: ["user", "owner", "deliveryBoy"],
+        required: true
+    },
+    text: {
+        type: String,
+        required: true
+    },
+    quickReply: {
+        type: Boolean,
+        default: false
+    }
+}, { timestamps: true })
+
 const shopOrderSchema = new mongoose.Schema({
     shop: {
         type: mongoose.Schema.Types.ObjectId,
@@ -24,7 +49,7 @@ const shopOrderSchema = new mongoose.Schema({
     shopOrderItems: [shopOrderItemSchema],
     status:{
         type:String,
-        enum:["pending","preparing","out of delivery","delivered"],
+        enum:["pending","preparing","out of delivery","delivered","cancelled"],
         default:"pending"
     },
   assignment:{
@@ -47,7 +72,8 @@ otpExpires:{
 deliveredAt:{
     type:Date,
     default:null
-}
+},
+chatMessages: [chatMessageSchema]
 
 }, { timestamps: true })
 
@@ -66,10 +92,51 @@ const orderSchema = new mongoose.Schema({
         latitude: Number,
         longitude: Number
     },
+    subtotalAmount: {
+        type: Number,
+        default: 0
+    },
+    deliveryFee: {
+        type: Number,
+        default: 0
+    },
+    grossAmount: {
+        type: Number,
+        default: 0
+    },
+    couponCode: {
+        type: String,
+        default: ""
+    },
+    couponDiscount: {
+        type: Number,
+        default: 0
+    },
+    loyaltyPointsUsed: {
+        type: Number,
+        default: 0
+    },
+    loyaltyDiscount: {
+        type: Number,
+        default: 0
+    },
+    loyaltyPointsEarned: {
+        type: Number,
+        default: 0
+    },
     totalAmount: {
-        type: Number
-    }
-    ,
+        type: Number,
+        default: 0
+    },
+    scheduleType: {
+        type: String,
+        enum: ["now", "lunch", "dinner"],
+        default: "now"
+    },
+    scheduledFor: {
+        type: Date,
+        default: null
+    },
     shopOrders: [shopOrderSchema],
     payment:{
         type:Boolean,
@@ -82,6 +149,10 @@ const orderSchema = new mongoose.Schema({
    razorpayPaymentId:{
     type:String,
        default:""
+   },
+   benefitsApplied: {
+    type: Boolean,
+    default: false
    }
 }, { timestamps: true })
 

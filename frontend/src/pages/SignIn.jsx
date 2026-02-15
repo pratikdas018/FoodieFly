@@ -11,6 +11,7 @@ import { auth } from '../../firebase';
 import { ClipLoader } from 'react-spinners';
 import { useDispatch } from 'react-redux';
 import { setUserData } from '../redux/userSlice';
+import { showAppPopup } from '../App';
 function SignIn() {
     const primaryColor = "#ff4d2d";
     const hoverColor = "#e64323";
@@ -30,6 +31,18 @@ function SignIn() {
                 email,password
             },{withCredentials:true})
            dispatch(setUserData(result.data))
+           showAppPopup({
+            title: "Login Successful",
+            message: `Welcome back, ${result.data.fullName || "User"}!`,
+            type: "success"
+           })
+           if (result.data.role === "user") {
+            showAppPopup({
+              title: "First Order Offer",
+              message: "Up to 78% off on your first order. Order now!",
+              type: "promo"
+            })
+           }
             setErr("")
             setLoading(false)
         } catch (error) {
@@ -45,6 +58,18 @@ function SignIn() {
              email:result.user.email,
          },{withCredentials:true})
          dispatch(setUserData(data))
+         showAppPopup({
+          title: "Login Successful",
+          message: `Welcome back, ${data.fullName || "User"}!`,
+          type: "success"
+         })
+         if (data.role === "user") {
+          showAppPopup({
+            title: "First Order Offer",
+            message: "Up to 78% off on your first order. Order now!",
+            type: "promo"
+          })
+         }
        } catch (error) {
          console.log(error)
        }
@@ -54,7 +79,7 @@ function SignIn() {
             <div className={`bg-white rounded-xl shadow-lg w-full max-w-md p-8 border-[1px] `} style={{
                 border: `1px solid ${borderColor}`
             }}>
-                <h1 className={`text-3xl font-bold mb-2 `} style={{ color: primaryColor }}>Vingo</h1>
+                <h1 className={`text-3xl font-bold mb-2 `} style={{ color: primaryColor }}>FoodieFly</h1>
                 <p className='text-gray-600 mb-8'> Sign In to your account to get started with delicious food deliveries
                 </p>
 

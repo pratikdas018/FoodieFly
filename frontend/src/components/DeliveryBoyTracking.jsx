@@ -21,6 +21,19 @@ function DeliveryBoyTracking({ data }) {
     const customerLat = data.customerLocation.lat
     const customerlon = data.customerLocation.lon
 
+    if (
+        deliveryBoyLat == null ||
+        deliveryBoylon == null ||
+        customerLat == null ||
+        customerlon == null
+    ) {
+        return (
+            <div className='w-full h-[400px] mt-3 rounded-xl overflow-hidden shadow-md bg-gray-50 flex items-center justify-center text-gray-500 text-sm'>
+                Live route is not available yet.
+            </div>
+        )
+    }
+
     const path = [
         [deliveryBoyLat, deliveryBoylon],
         [customerLat, customerlon]
@@ -43,7 +56,7 @@ function DeliveryBoyTracking({ data }) {
              <Popup>Delivery Boy</Popup>
              </Marker>
               <Marker position={[customerLat,customerlon]} icon={customerIcon}>
-             <Popup>Delivery Boy</Popup>
+             <Popup>Delivery Address</Popup>
              </Marker>
 
 

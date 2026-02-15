@@ -26,6 +26,11 @@ const shopSchema=new mongoose.Schema({
         type:String,
         required:true
     },
+    adminStatus: {
+        type: String,
+        enum: ["active", "suspended"],
+        default: "active"
+    },
     items:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Item"

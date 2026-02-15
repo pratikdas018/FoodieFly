@@ -7,12 +7,18 @@ import { FaMinus } from "react-icons/fa";
 import { FaPlus } from "react-icons/fa";
 import { FaShoppingCart } from "react-icons/fa";
 import { useDispatch, useSelector } from 'react-redux';
-import { addToCart } from '../redux/userSlice';
+import { addToCart, setUserData } from '../redux/userSlice';
+import { IoHeart, IoHeartOutline } from "react-icons/io5";
+import axios from 'axios';
+import { serverUrl } from '../App';
 
 function FoodCard({data}) {
 const [quantity,setQuantity]=useState(0)
+const [isFavoriteLoading, setIsFavoriteLoading] = useState(false)
 const dispatch=useDispatch()
-const {cartItems}=useSelector(state=>state.user)
+const {cartItems, userData}=useSelector(state=>state.user)
+const favoriteIds = new Set((userData?.favoriteItems || []).map((favorite) => String(favorite?._id || favorite)))
+const isFavorite = favoriteIds.has(String(data._id))
     const renderStars=(rating)=>{   //r=3
         const stars=[];
         for (let i = 1; i <= 5; i++) {
@@ -40,9 +46,25 @@ const newQty=quantity-1
     
 }
 
+const handleToggleFavorite = async () => {
+    if (isFavoriteLoading) return
+    setIsFavoriteLoading(true)
+    try {
+      const result = await axios.post(`${serverUrl}/api/user/toggle-favorite/${data._id}`, {}, { withCredentials: true })
+      dispatch(setUserData(result.data.user))
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setIsFavoriteLoading(false)
+    }
+}
+
   return (
     <div className='w-[250px] rounded-2xl border-2 border-[#ff4d2d] bg-white shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col'>
       <div className='relative w-full h-[170px] flex justify-center items-center bg-white'>
+        <button className='absolute top-3 left-3 bg-white rounded-full p-1 shadow z-10 disabled:opacity-50' onClick={handleToggleFavorite} disabled={isFavoriteLoading}>
+          {isFavorite ? <IoHeart className='text-[#ff4d2d] text-lg' /> : <IoHeartOutline className='text-[#ff4d2d] text-lg' />}
+        </button>
         <div className='absolute top-3 right-3 bg-white rounded-full p-1 shadow'>{data.foodType=="veg"?<FaLeaf className='text-green-600 text-lg'/>:<FaDrumstickBite className='text-red-600 text-lg'/>}</div>
 
 

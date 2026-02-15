@@ -19,6 +19,7 @@ function AddItem() {
     const [backendImage, setBackendImage] = useState(null)
     const [category, setCategory] = useState("")
     const [foodType, setFoodType] = useState("veg")
+    const [inStock, setInStock] = useState(true)
     const categories = ["Snacks",
         "Main Course",
         "Desserts",
@@ -46,6 +47,7 @@ function AddItem() {
             formData.append("category",category)
             formData.append("foodType", foodType)
             formData.append("price", price)
+            formData.append("inStock", inStock)
             if (backendImage) {
                 formData.append("image", backendImage)
             }
@@ -124,6 +126,10 @@ function AddItem() {
 
 
                         </select>
+                    </div>
+                    <div className='flex items-center gap-2'>
+                        <input id="inStock" type="checkbox" checked={inStock} onChange={(e) => setInStock(e.target.checked)} />
+                        <label htmlFor="inStock" className='text-sm font-medium text-gray-700'>In Stock</label>
                     </div>
 
                     <button className='w-full bg-[#ff4d2d] text-white px-6 py-3 rounded-lg font-semibold shadow-md hover:bg-orange-600 hover:shadow-lg transition-all duration-200 cursor-pointer' disabled={loading}>

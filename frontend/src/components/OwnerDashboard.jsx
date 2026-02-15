@@ -1,13 +1,31 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Nav from './Nav'
 import { useSelector } from 'react-redux'
 import { FaUtensils } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 import { FaPen } from "react-icons/fa";
 import OwnerItemCard from './OwnerItemCard';
+import axios from 'axios';
+import { serverUrl } from '../App';
+import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 function OwnerDashboard() {
   const { myShopData } = useSelector(state => state.owner)
   const navigate = useNavigate()
+  const [analytics, setAnalytics] = useState(null)
+
+  const handleGetAnalytics = async () => {
+    try {
+      const result = await axios.get(`${serverUrl}/api/order/owner-analytics`, { withCredentials: true })
+      setAnalytics(result.data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    if (!myShopData) return
+    handleGetAnalytics()
+  }, [myShopData?._id, myShopData?.items?.length])
 
   
   return (
@@ -60,6 +78,62 @@ function OwnerDashboard() {
           </div>
         </div>
             }
+
+            {analytics && (
+              <div className='w-full max-w-5xl bg-white rounded-2xl border border-orange-100 shadow-md p-5'>
+                <h2 className='text-xl font-bold text-gray-800 mb-4'>Owner Analytics</h2>
+                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6'>
+                  <div className='rounded-xl border border-orange-100 p-4 bg-orange-50'>
+                    <p className='text-xs text-gray-600'>Total Orders</p>
+                    <p className='text-2xl font-bold text-[#ff4d2d]'>{analytics.summary?.totalOrders || 0}</p>
+                  </div>
+                  <div className='rounded-xl border border-green-100 p-4 bg-green-50'>
+                    <p className='text-xs text-gray-600'>Delivered Sales</p>
+                    <p className='text-2xl font-bold text-green-700'>INR {analytics.summary?.deliveredSales || 0}</p>
+                  </div>
+                  <div className='rounded-xl border border-blue-100 p-4 bg-blue-50'>
+                    <p className='text-xs text-gray-600'>Conversion Rate</p>
+                    <p className='text-2xl font-bold text-blue-700'>{analytics.summary?.conversionRate || 0}%</p>
+                  </div>
+                  <div className='rounded-xl border border-red-100 p-4 bg-red-50'>
+                    <p className='text-xs text-gray-600'>Cancellation Rate</p>
+                    <p className='text-2xl font-bold text-red-600'>{analytics.summary?.cancellationRate || 0}%</p>
+                  </div>
+                </div>
+
+                <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+                  <div className='rounded-xl border p-4'>
+                    <h3 className='font-semibold text-gray-800 mb-3'>Hourly Sales</h3>
+                    <ResponsiveContainer width="100%" height={240}>
+                      <LineChart data={analytics.hourlySales || []}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="hour" tickFormatter={(hour) => `${hour}:00`} />
+                        <YAxis />
+                        <Tooltip formatter={(value) => [`INR ${value}`, "Sales"]} labelFormatter={(label) => `${label}:00`} />
+                        <Line type="monotone" dataKey="sales" stroke="#ff4d2d" strokeWidth={2} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div className='rounded-xl border p-4'>
+                    <h3 className='font-semibold text-gray-800 mb-3'>Top Items</h3>
+                    {(analytics.topItems || []).length > 0 ? (
+                      <ResponsiveContainer width="100%" height={240}>
+                        <BarChart data={(analytics.topItems || []).slice(0, 6)}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="name" interval={0} angle={-15} textAnchor="end" height={55} />
+                          <YAxis allowDecimals={false} />
+                          <Tooltip formatter={(value) => [value, "Quantity"]} />
+                          <Bar dataKey="quantity" fill="#ff4d2d" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <p className='text-sm text-gray-500'>No item sales data yet.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {myShopData.items.length>0 && <div className='flex flex-col items-center gap-4 w-full max-w-3xl '>
               {myShopData.items.map((item,index)=>(

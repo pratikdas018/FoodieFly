@@ -1,4 +1,4 @@
-import { createSlice, current } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 
 const userSlice = createSlice({
   name: "user",
@@ -13,7 +13,10 @@ const userSlice = createSlice({
     totalAmount: 0,
     myOrders: [],
     searchItems: null,
-    socket: null
+    socket: null,
+    locationPermission: "idle",
+    locationError: null,
+    notifications: []
   },
   reducers: {
     setUserData: (state, action) => {
@@ -36,6 +39,24 @@ const userSlice = createSlice({
     },
     setSocket: (state, action) => {
       state.socket = action.payload
+    },
+    setCartItems: (state, action) => {
+      const inputItems = Array.isArray(action.payload) ? action.payload : []
+      const mergedItems = []
+      inputItems.forEach((cartItem) => {
+        if (!cartItem?.id) return
+        const existingItem = mergedItems.find((item) => item.id == cartItem.id)
+        if (existingItem) {
+          existingItem.quantity += Number(cartItem.quantity || 0)
+        } else {
+          mergedItems.push({
+            ...cartItem,
+            quantity: Number(cartItem.quantity || 0)
+          })
+        }
+      })
+      state.cartItems = mergedItems.filter((item) => item.quantity > 0)
+      state.totalAmount = state.cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0)
     },
     addToCart: (state, action) => {
       const cartItem = action.payload
@@ -101,9 +122,72 @@ const userSlice = createSlice({
 
     setSearchItems: (state, action) => {
       state.searchItems = action.payload
+    },
+
+    setLocationPermission: (state, action) => {
+      state.locationPermission = action.payload
+    },
+
+    setLocationError: (state, action) => {
+      state.locationError = action.payload
+    },
+
+    addNotification: (state, action) => {
+      const payload = action.payload || {}
+      state.notifications = [{
+        id: payload.id || `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        title: payload.title || "Notification",
+        message: payload.message || "",
+        type: payload.type || "info",
+        route: payload.route || "/",
+        createdAt: payload.createdAt || new Date().toISOString(),
+        read: false
+      }, ...state.notifications].slice(0, 50)
+    },
+
+    markAllNotificationsRead: (state) => {
+      state.notifications = state.notifications.map((notification) => ({
+        ...notification,
+        read: true
+      }))
+    },
+
+    markNotificationRead: (state, action) => {
+      state.notifications = state.notifications.map((notification) => {
+        if (notification.id !== action.payload) return notification
+        return { ...notification, read: true }
+      })
+    },
+
+    clearNotifications: (state) => {
+      state.notifications = []
     }
   }
 })
 
-export const { setUserData, setCurrentAddress, setCurrentCity, setCurrentState, setShopsInMyCity, setItemsInMyCity, addToCart, updateQuantity, removeCartItem, setMyOrders, addMyOrder, updateOrderStatus, setSearchItems, setTotalAmount, setSocket ,updateRealtimeOrderStatus} = userSlice.actions
+export const {
+  setUserData,
+  setCurrentAddress,
+  setCurrentCity,
+  setCurrentState,
+  setShopsInMyCity,
+  setItemsInMyCity,
+  addToCart,
+  updateQuantity,
+  removeCartItem,
+  setMyOrders,
+  addMyOrder,
+  updateOrderStatus,
+  setSearchItems,
+  setTotalAmount,
+  setSocket,
+  setCartItems,
+  updateRealtimeOrderStatus,
+  setLocationPermission,
+  setLocationError,
+  addNotification,
+  markAllNotificationsRead,
+  markNotificationRead,
+  clearNotifications
+} = userSlice.actions
 export default userSlice.reducer
