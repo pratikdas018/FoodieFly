@@ -18,7 +18,7 @@ function Footer() {
           <Link to="/profile" className="hover:text-[#ff4d2d]">Profile</Link>
         </div>
 
-        <p className="text-xs text-gray-500">Copyright {year} FoodieFly. All rights reserved.</p>
+        <p className="text-xs text-gray-500">FoodieFly ©  {year} copyright. All rights reserved.</p>
       </div>
     </footer>
   )

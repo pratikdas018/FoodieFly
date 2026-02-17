@@ -1,5 +1,6 @@
 import React from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
+import axios from 'axios'
 import SignUp from './pages/SignUp'
 import SignIn from './pages/SignIn'
 import ForgotPassword from './pages/ForgotPassword'
@@ -117,6 +118,27 @@ useUpdateLocation()
   useGetShopByCity()
   useGetItemsByCity()
   useGetMyOrders()
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const sessionKey = "foodiefly_visit_tracked"
+    if (sessionStorage.getItem(sessionKey) === "1") return
+
+    const payload = {
+      page: `${window.location.pathname}${window.location.search}`,
+      referrer: document.referrer || "direct",
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "unknown",
+      screen: `${window.screen?.width || 0}x${window.screen?.height || 0}`
+    }
+
+    axios.post(`${serverUrl}/api/analytics/visit`, payload, { withCredentials: true })
+      .then(() => {
+        sessionStorage.setItem(sessionKey, "1")
+      })
+      .catch(() => {
+        // Ignore analytics failure and never block app usage.
+      })
+  }, [])
 
   useEffect(()=>{
     const socketInstance=io(serverUrl,{withCredentials:true})
