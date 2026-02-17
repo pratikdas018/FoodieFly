@@ -30,6 +30,7 @@ import { useLocation } from 'react-router-dom'
 import Footer from './components/Footer'
 import AdminDashboard from './components/AdminDashboard'
 import Favorites from './pages/Favorites'
+import CompanyInfo from './pages/CompanyInfo'
 
 const resolveServerUrl = () => {
   const trimTrailingSlash = (value = "") => String(value || "").trim().replace(/\/+$/, "")
@@ -242,6 +243,10 @@ useUpdateLocation()
       <Route path='/shop/:shopId' element={userData?<Shop/>:<Navigate to={"/signin"}/>}/>
       <Route path='/profile' element={userData?<Profile/>:<Navigate to={"/signin"}/>}/>
       <Route path='/favorites' element={userData?.role=="user"?<Favorites/>:<Navigate to={"/"}/>}/>
+      <Route path='/about-us' element={userData?<CompanyInfo type="about"/>:<Navigate to={"/signin"}/>}/>
+      <Route path='/careers' element={userData?<CompanyInfo type="careers"/>:<Navigate to={"/signin"}/>}/>
+      <Route path='/privacy-policy' element={userData?<CompanyInfo type="privacy"/>:<Navigate to={"/signin"}/>}/>
+      <Route path='/terms-of-service' element={userData?<CompanyInfo type="terms"/>:<Navigate to={"/signin"}/>}/>
       <Route path='/admin' element={userData?.role==="admin"?<AdminDashboard/>:<Navigate to={"/"}/>}/>
     </Routes>
     {shouldShowFooter && <Footer />}
