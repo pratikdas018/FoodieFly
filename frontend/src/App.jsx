@@ -22,7 +22,7 @@ import useGetMyOrders from './hooks/useGetMyOrders'
 import useUpdateLocation from './hooks/useUpdateLocation'
 import TrackOrderPage from './pages/TrackOrderPage'
 import Shop from './pages/Shop'
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import { io } from 'socket.io-client'
 import { addNotification, setSocket } from './redux/userSlice'
 import Profile from './pages/Profile'
@@ -169,9 +169,13 @@ useUpdateLocation()
     }
   }, [socket, userData?._id])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" })
-  }, [location.pathname])
+    const frameId = window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" })
+    })
+    return () => window.cancelAnimationFrame(frameId)
+  }, [location.pathname, location.key])
 
   useEffect(() => {
     const handlePopupEvent = (event) => {

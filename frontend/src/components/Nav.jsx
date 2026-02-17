@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { FaLocationDot } from "react-icons/fa6";
 import { IoIosSearch } from "react-icons/io";
-import { FiBell, FiHeart, FiShoppingCart } from "react-icons/fi";
+import { FiBell, FiHeart, FiMoon, FiShoppingCart, FiSun } from "react-icons/fi";
 import { useDispatch, useSelector } from 'react-redux';
 import { RxCross2 } from "react-icons/rx";
 import axios from 'axios';
@@ -17,6 +17,11 @@ function Nav() {
     const [showNotifications, setShowNotifications] = useState(false)
     const [showSearch, setShowSearch] = useState(false)
     const [query,setQuery]=useState("")
+    const [theme, setTheme] = useState(() => {
+      if (typeof window === "undefined") return "light"
+      const savedTheme = localStorage.getItem("foodiefly_theme")
+      return savedTheme === "dark" ? "dark" : "light"
+    })
     const dispatch = useDispatch()
     const navigate=useNavigate()
     const location = useLocation()
@@ -81,10 +86,7 @@ function Nav() {
         window.scrollTo({ top: 0, left: 0, behavior: "auto" })
         return
       }
-      navigate("/my-orders")
-      setTimeout(() => {
-        window.scrollTo({ top: 0, left: 0, behavior: "auto" })
-      }, 0)
+      navigate("/my-orders", { state: { openFromNav: true, ts: Date.now() } })
     }
 
     const handleNavigateToAdmin = () => {
@@ -107,6 +109,19 @@ function Nav() {
       navigate("/favorites")
     }
 
+    const handleNavigateHome = () => {
+      setShowInfo(false)
+      setShowNotifications(false)
+      if (location.pathname === "/") {
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" })
+        return
+      }
+      navigate("/")
+      setTimeout(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" })
+      }, 0)
+    }
+
     const handleSearchItems=async () => {
       if (!currentCity) return
       try {
@@ -117,6 +132,10 @@ function Nav() {
       }
     }
 
+    const handleThemeToggle = () => {
+      setTheme((prevTheme) => (prevTheme === "dark" ? "light" : "dark"))
+    }
+
     useEffect(()=>{
         if(query){
 handleSearchItems()
@@ -125,8 +144,15 @@ handleSearchItems()
         }
 
     },[query])
+
+    useEffect(() => {
+      if (typeof window === "undefined") return
+      document.documentElement.setAttribute("data-theme", theme)
+      localStorage.setItem("foodiefly_theme", theme)
+    }, [theme])
     const iconButtonClass = "h-[40px] w-[40px] rounded-full border border-orange-200 bg-white text-[#ff4d2d] flex items-center justify-center shadow-sm hover:bg-orange-50 transition-all duration-200 cursor-pointer"
     const pillButtonClass = "hidden md:flex items-center gap-2 px-4 h-[40px] rounded-full border border-orange-200 bg-white text-[#ff4d2d] text-sm font-semibold shadow-sm hover:bg-orange-50 transition-all duration-200 cursor-pointer"
+    const ownerPillButtonClass = "hidden xl:flex items-center gap-2 px-4 h-[40px] rounded-full border border-orange-200 bg-white text-[#ff4d2d] text-sm font-semibold shadow-sm hover:bg-orange-50 transition-all duration-200 cursor-pointer"
 
     return (
         <div className='fixed top-0 left-0 w-full z-[9999] bg-gradient-to-r from-[#fff9f6]/95 via-white/95 to-[#fff3eb]/95 backdrop-blur-md border-b border-orange-100 shadow-[0_10px_30px_rgba(255,77,45,0.12)] overflow-visible'>
@@ -142,14 +168,14 @@ handleSearchItems()
                     </div>
                 </div>}
 
-                <div className='flex items-center gap-2 md:gap-3 shrink-0'>
-                    <div className='h-9 w-9 rounded-xl bg-gradient-to-br from-[#ff4d2d] to-[#ff7b5d] text-white font-black flex items-center justify-center shadow-md'>
+                <button type="button" className='flex items-center gap-2 md:gap-3 shrink-0 cursor-pointer' onClick={handleNavigateHome}>
+                    <div className='nav-brand-badge h-9 w-9 rounded-xl bg-gradient-to-br from-[#ff4d2d] to-[#ff7b5d] text-white font-black flex items-center justify-center shadow-md'>
                         F
                     </div>
-                    <h1 className='text-2xl md:text-3xl font-black tracking-tight bg-gradient-to-r from-[#ff4d2d] to-[#ff7b5d] bg-clip-text text-transparent'>
+                    <h1 className='nav-brand-title text-2xl md:text-3xl font-black tracking-tight bg-gradient-to-r from-[#ff4d2d] to-[#ff7b5d] bg-clip-text text-transparent'>
                         FoodieFly
                     </h1>
-                </div>
+                </button>
 
                 {userData.role == "user" && <div className='md:w-[58%] lg:w-[44%] h-[60px] rounded-2xl border border-orange-100 bg-white/90 shadow-[0_8px_20px_rgba(255,77,45,0.12)] items-center gap-2 hidden md:flex px-3'>
                     <div className='flex items-center w-[34%] overflow-hidden gap-[8px] px-[8px] border-r border-orange-200'>
@@ -171,20 +197,20 @@ handleSearchItems()
 
                     {userData.role == "owner"? <>
                         {myShopData && <>
-                            <button className={pillButtonClass} onClick={()=>navigate("/add-item")}>
+                            <button className={ownerPillButtonClass} onClick={()=>navigate("/add-item")}>
                                 <FaPlus size={16} />
                                 <span>Add Food Item</span>
                             </button>
-                            <button className={`md:hidden ${iconButtonClass}`} onClick={()=>navigate("/add-item")}>
+                            <button className={`xl:hidden ${iconButtonClass}`} onClick={()=>navigate("/add-item")}>
                                 <FaPlus size={16} />
                             </button>
                         </>}
 
-                        <button className={pillButtonClass} onClick={handleNavigateToMyOrders}>
+                        <button className={ownerPillButtonClass} onClick={handleNavigateToMyOrders}>
                             <TbReceipt2 size={18}/>
                             <span>My Orders</span>
                         </button>
-                        <button className={`md:hidden ${iconButtonClass}`} onClick={handleNavigateToMyOrders}>
+                        <button className={`xl:hidden ${iconButtonClass}`} onClick={handleNavigateToMyOrders}>
                             <TbReceipt2 size={18}/>
                         </button>
                     </>: (
@@ -220,6 +246,14 @@ handleSearchItems()
                         {unreadCount > 0 && <span className='absolute right-[-5px] top-[-7px] min-w-[17px] h-[17px] px-1 rounded-full bg-[#ff4d2d] text-white text-[10px] flex items-center justify-center'>{unreadCount}</span>}
                     </button>
 
+                    <button
+                      className={iconButtonClass}
+                      onClick={handleThemeToggle}
+                      title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                    >
+                      {theme === "dark" ? <FiSun size={18} /> : <FiMoon size={18} />}
+                    </button>
+
                     {showNotifications && <div className='absolute top-[52px] right-0 w-[340px] max-w-[calc(100vw-20px)] max-h-[430px] overflow-y-auto bg-white/95 backdrop-blur-md border border-orange-100 shadow-[0_15px_40px_rgba(0,0,0,0.12)] rounded-2xl p-[14px] flex flex-col gap-[10px] z-[9999]'>
                         <div className='flex items-center justify-between border-b border-orange-100 pb-2'>
                             <h3 className='text-[16px] font-semibold text-gray-800'>Notifications</h3>
@@ -235,7 +269,7 @@ handleSearchItems()
                         ))}
                     </div>}
 
-                    <button className='w-[40px] h-[40px] rounded-full flex items-center justify-center bg-gradient-to-br from-[#ff4d2d] to-[#ff7b5d] text-white text-[16px] shadow-lg font-semibold cursor-pointer border-2 border-white' onClick={() => { setShowNotifications(false); setShowInfo(prev => !prev) }}>
+                    <button className='nav-profile-btn w-[40px] h-[40px] rounded-full flex items-center justify-center bg-gradient-to-br from-[#ff4d2d] to-[#ff7b5d] text-white text-[16px] shadow-lg font-semibold cursor-pointer border-2 border-white' onClick={() => { setShowNotifications(false); setShowInfo(prev => !prev) }}>
                         {userData?.fullName.slice(0, 1)}
                     </button>
 

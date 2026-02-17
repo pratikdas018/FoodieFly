@@ -12,7 +12,7 @@ import { FaCreditCard } from "react-icons/fa"
 import axios from 'axios'
 import { FaMobileScreenButton } from "react-icons/fa6"
 import { useNavigate } from 'react-router-dom'
-import { serverUrl } from '../App'
+import { serverUrl, showAppPopup } from '../App'
 import { addMyOrder, setUserData } from '../redux/userSlice'
 
 function RecenterMap({ location }) {
@@ -206,16 +206,49 @@ function CheckOut() {
         dispatch(addMyOrder(result.data))
         navigate("/order-placed")
       } else {
-        const orderId = result.data.orderId
-        const razorOrder = result.data.razorOrder
-        openRazorpayWindow(orderId, razorOrder)
+        if (result.data?.orderId && result.data?.razorOrder) {
+          const orderId = result.data.orderId
+          const razorOrder = result.data.razorOrder
+          openRazorpayWindow(orderId, razorOrder)
+          return
+        }
+        if (result.data?._id) {
+          dispatch(addMyOrder(result.data))
+          if (result.data?.dummyPayment) {
+            showAppPopup({
+              title: "Dummy Payment Success",
+              message: "Razorpay keys are not configured. Order placed using dummy online payment.",
+              type: "info"
+            })
+          }
+          navigate("/order-placed")
+          return
+        }
+        showAppPopup({
+          title: "Payment Error",
+          message: "Unable to start online payment flow.",
+          type: "info"
+        })
       }
     } catch (error) {
       console.log(error)
+      showAppPopup({
+        title: "Order Failed",
+        message: error?.response?.data?.message || "Unable to place order right now.",
+        type: "info"
+      })
     }
   }
 
   const openRazorpayWindow = (orderId, razorOrder) => {
+    if (!window?.Razorpay || !razorOrder?.id) {
+      showAppPopup({
+        title: "Payment Unavailable",
+        message: "Razorpay SDK is unavailable. Please try Cash on Delivery.",
+        type: "info"
+      })
+      return
+    }
     const options = {
       key: import.meta.env.VITE_RAZORPAY_KEY_ID,
       amount: razorOrder.amount,

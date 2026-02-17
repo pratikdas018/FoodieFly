@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+:root {
+  --scroll-track: #fff1eb;
+  --scroll-thumb: #ff4d2d;
+  --scroll-thumb-hover: #e64526;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --scroll-track: #111827;
+  --scroll-thumb: #f97316;
+  --scroll-thumb-hover: #fb923c;
+}
+
 html,
 body,
 #root {
@@ -8,12 +21,15 @@ body,
 
 body {
   overflow-y: scroll;
+  background: #fff9f6;
+  color: #111827;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 /* Global scrollbar styling */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #ff4d2d #fff1eb;
+  scrollbar-color: var(--scroll-thumb) var(--scroll-track);
 }
 
 *::-webkit-scrollbar {
@@ -22,16 +38,152 @@ body {
 }
 
 *::-webkit-scrollbar-track {
-  background: #fff1eb;
+  background: var(--scroll-track);
   border-radius: 999px;
 }
 
 *::-webkit-scrollbar-thumb {
-  background: #ff4d2d;
+  background: var(--scroll-thumb);
   border-radius: 999px;
-  border: 2px solid #fff1eb;
+  border: 2px solid var(--scroll-track);
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: #e64526;
+  background: var(--scroll-thumb-hover);
+}
+
+/* Global dark theme overrides for current Tailwind utility usage */
+html[data-theme="dark"] body {
+  background: #0b1220;
+  color: #e5e7eb;
+}
+
+html[data-theme="dark"] .bg-\[\#fff9f6\] {
+  background-color: #0b1220 !important;
+}
+
+html[data-theme="dark"] .bg-\[\#fffaf7\] {
+  background-color: #0f172a !important;
+}
+
+html[data-theme="dark"] .bg-white,
+html[data-theme="dark"] .bg-white\/90,
+html[data-theme="dark"] .bg-white\/95 {
+  background-color: #111827 !important;
+}
+
+html[data-theme="dark"] .text-gray-900,
+html[data-theme="dark"] .text-gray-800 {
+  color: #f3f4f6 !important;
+}
+
+html[data-theme="dark"] .text-gray-700,
+html[data-theme="dark"] .text-gray-600,
+html[data-theme="dark"] .text-gray-500,
+html[data-theme="dark"] .text-gray-400 {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] .border-orange-100,
+html[data-theme="dark"] .border-orange-200,
+html[data-theme="dark"] .border-gray-100,
+html[data-theme="dark"] .border-gray-200 {
+  border-color: #374151 !important;
+}
+
+html[data-theme="dark"] .bg-orange-50 {
+  background-color: #1f2937 !important;
+}
+
+html[data-theme="dark"] .bg-gray-50 {
+  background-color: #111827 !important;
+}
+
+html[data-theme="dark"] .border-gray-300 {
+  border-color: #334155 !important;
+}
+
+html[data-theme="dark"] input,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select {
+  background-color: #0f172a !important;
+  color: #e5e7eb !important;
+  border-color: #374151 !important;
+}
+
+html[data-theme="dark"] .text-green-700 {
+  color: #4ade80 !important;
+}
+
+html[data-theme="dark"] .text-blue-600 {
+  color: #60a5fa !important;
+}
+
+html[data-theme="dark"] .shadow-sm,
+html[data-theme="dark"] .shadow-md,
+html[data-theme="dark"] .shadow-lg,
+html[data-theme="dark"] .shadow-xl,
+html[data-theme="dark"] .shadow-2xl {
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Footer-specific dark palette */
+html[data-theme="dark"] .footer-root {
+  background: linear-gradient(135deg, #0f172a 0%, #111827 55%, #1e293b 100%) !important;
+  border-top-color: #334155 !important;
+}
+
+html[data-theme="dark"] .footer-heading {
+  color: #f8fafc !important;
+}
+
+html[data-theme="dark"] .footer-link {
+  color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] .footer-link:hover {
+  color: #fb923c !important;
+}
+
+html[data-theme="dark"] .footer-link-highlight {
+  color: #fdba74 !important;
+}
+
+html[data-theme="dark"] .footer-contact {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] .footer-social,
+html[data-theme="dark"] .footer-store-btn {
+  background-color: #0f172a !important;
+  border-color: #475569 !important;
+  color: #fdba74 !important;
+}
+
+html[data-theme="dark"] .footer-social:hover,
+html[data-theme="dark"] .footer-store-btn:hover {
+  background-color: #1e293b !important;
+}
+
+html[data-theme="dark"] .footer-bottom-text {
+  color: #94a3b8 !important;
+}
+
+/* Navbar dark palette for brand and profile button */
+html[data-theme="dark"] .nav-brand-badge {
+  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .nav-brand-title {
+  background: none !important;
+  color: #fb923c !important;
+  -webkit-text-fill-color: #fb923c !important;
+  text-shadow: 0 1px 6px rgba(251, 146, 60, 0.25);
+}
+
+html[data-theme="dark"] .nav-profile-btn {
+  background: linear-gradient(135deg, #334155 0%, #0f172a 100%) !important;
+  border-color: #475569 !important;
+  color: #f8fafc !important;
 }

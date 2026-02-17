@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { IoIosArrowRoundBack } from "react-icons/io";
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import UserOrderCard from '../components/UserOrderCard';
 import OwnerOrderCard from '../components/OwnerOrderCard';
 import { addMyOrder, updateRealtimeOrderStatus } from '../redux/userSlice';
@@ -11,12 +11,33 @@ import DeliveryBoyOrderCard from '../components/DeliveryBoyOrderCard';
 function MyOrders() {
   const { userData, myOrders,socket} = useSelector(state => state.user)
   const navigate = useNavigate()
+  const location = useLocation()
   const dispatch=useDispatch()
+  const getOrderTimestamp = (order) => {
+    const createdAtTimestamp = new Date(order?.createdAt || order?.updatedAt || 0).getTime()
+    if (Number.isFinite(createdAtTimestamp) && createdAtTimestamp > 0) {
+      return createdAtTimestamp
+    }
+    if (order?._id) {
+      const objectIdTimestamp = parseInt(String(order._id).slice(0, 8), 16) * 1000
+      if (Number.isFinite(objectIdTimestamp)) return objectIdTimestamp
+    }
+    return 0
+  }
   const sortedOrders = useMemo(() => {
-    return [...(myOrders || [])].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    return [...(myOrders || [])].sort((a, b) => getOrderTimestamp(b) - getOrderTimestamp(a))
   }, [myOrders])
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" })
+    const frameId = window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" })
+    })
+    return () => window.cancelAnimationFrame(frameId)
+  }, [location.key, location.state?.ts])
+
+  useEffect(() => {
+    if (!location.state?.openFromNav) return
     window.scrollTo({ top: 0, left: 0, behavior: "auto" })
   }, [])
 

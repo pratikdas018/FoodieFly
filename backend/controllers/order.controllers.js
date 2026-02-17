@@ -10,10 +10,24 @@ import RazorPay from "razorpay"
 import dotenv from "dotenv"
 
 dotenv.config()
-let instance = new RazorPay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+const isPlaceholderCredential = (value) => {
+    const normalized = String(value || "").trim().toLowerCase()
+    if (!normalized) return true
+    if (normalized.startsWith("//")) return true
+    if (normalized.includes("add your razorpay key")) return true
+    return false
+}
+
+const isRazorpayConfigured = !isPlaceholderCredential(process.env.RAZORPAY_KEY_ID)
+    && !isPlaceholderCredential(process.env.RAZORPAY_KEY_SECRET)
+
+let instance = null
+if (isRazorpayConfigured) {
+    instance = new RazorPay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET,
+    })
+}
 
 const shortOrderId = (id) => String(id || "").slice(-6).toUpperCase()
 
@@ -478,6 +492,50 @@ export const placeOrder = async (req, res) => {
             if (pricing.totalAmount <= 0) {
                 return res.status(400).json({ message: "online payment requires amount greater than zero" })
             }
+            if (!isRazorpayConfigured || !instance) {
+                const dummyOrder = await Order.create({
+                    ...orderPayload,
+                    payment: true,
+                    razorpayOrderId: `dummy_order_${Date.now()}`,
+                    razorpayPaymentId: `dummy_payment_${Date.now()}`
+                })
+                await applyOrderBenefits(dummyOrder)
+
+                await dummyOrder.populate("shopOrders.shopOrderItems.item", "name image price")
+                await dummyOrder.populate("shopOrders.shop", "name")
+                await dummyOrder.populate("shopOrders.owner", "fullName socketId")
+                await dummyOrder.populate("user", "fullName email mobile")
+
+                const io = req.app.get('io')
+                if (io) {
+                    dummyOrder.shopOrders.forEach(shopOrder => {
+                        const ownerSocketId = shopOrder.owner.socketId
+                        if (ownerSocketId) {
+                            io.to(ownerSocketId).emit('newOrder', {
+                                _id: dummyOrder._id,
+                                paymentMethod: dummyOrder.paymentMethod,
+                                user: dummyOrder.user,
+                                shopOrders: shopOrder,
+                                createdAt: dummyOrder.createdAt,
+                                deliveryAddress: dummyOrder.deliveryAddress,
+                                payment: dummyOrder.payment
+                            })
+                            emitNotification(io, ownerSocketId, buildNotification({
+                                type: "new_order",
+                                title: "New paid order received",
+                                message: `Order #${shortOrderId(dummyOrder._id)} payment is confirmed (dummy mode).`,
+                                route: "/my-orders"
+                            }))
+                        }
+                    })
+                    await notifyDeliveryPartnersForNewOrder(io, dummyOrder)
+                }
+
+                return res.status(201).json({
+                    ...dummyOrder.toObject(),
+                    dummyPayment: true
+                })
+            }
             const razorOrder = await instance.orders.create({
                 amount: Math.round(pricing.totalAmount * 100),
                 currency: 'INR',
@@ -629,6 +687,9 @@ export const createOrderDispute = async (req, res) => {
 
 export const verifyPayment = async (req, res) => {
     try {
+        if (!isRazorpayConfigured || !instance) {
+            return res.status(400).json({ message: "Razorpay is not configured. Use dummy online payment mode." })
+        }
         const { razorpay_payment_id, orderId } = req.body
         const payment = await instance.payments.fetch(razorpay_payment_id)
         if (!payment || payment.status != "captured") {
